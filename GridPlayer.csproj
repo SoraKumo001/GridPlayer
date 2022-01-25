@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\pause-circle-outline.png" />
+    <None Remove="Images\play-circle-outline.png" />
+    <None Remove="Images\stop-circle-outline.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\pause-circle-outline.png" />
+    <Resource Include="Images\play-circle-outline.png" />
+    <Resource Include="Images\stop-circle-outline.png" />
+  </ItemGroup>
+
+</Project>
