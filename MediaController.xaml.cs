@@ -23,7 +23,7 @@ namespace GridPlayer
             mediaElement = media;
             if (mediaElement != null)
             {
-                DispatcherTimer timer = new DispatcherTimer();
+                DispatcherTimer timer = new ();
                 timer.Interval = TimeSpan.FromSeconds(0.1);
                 timer.Tick += timer_Tick;
                 timer.Start();

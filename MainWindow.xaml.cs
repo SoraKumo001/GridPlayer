@@ -75,19 +75,21 @@ namespace GridPlayer
         }
         private void loadSettings()
         {
-            var jsonString = File.ReadAllText(settingsPath + "/" + settingsFile);
-            if (jsonString != null)
+            try
             {
-                try
+                var jsonString = File.ReadAllText(settingsPath + "/" + settingsFile);
+                if (jsonString != null)
                 {
+
                     var settings = JsonSerializer.Deserialize<Settings>(jsonString);
                     if (settings != null)
                     {
                         this.settings = settings;
                     }
                 }
-                catch (Exception er) { Debug.WriteLine(er); }
+
             }
+            catch (Exception) { }
         }
 
         protected override void OnSourceInitialized(EventArgs e)
