@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,7 +13,9 @@ namespace GridPlayer
     public partial class MediaPlayer : UserControl
     {
         public event EventHandler mediaStop = (sender, e) => { };
+        public event EventHandler mediaOpen = (sender, e) => { };
         public DispatcherTimer timer = new();
+        public MediaElement media { get { return mediaElement; } }
         public MediaPlayer()
         {
             InitializeComponent();
@@ -23,13 +26,15 @@ namespace GridPlayer
         {
             mediaController.Visibility = Visibility.Hidden;
         }
-        public void play(string path) {
+        public void play(string path)
+        {
             mediaElement.LoadedBehavior = MediaState.Manual;
             mediaElement.Source = new Uri(path);
             mediaController.setMedia(mediaElement);
             mediaController.mediaStop += _mediaStop;
         }
-        private void _mediaStop(object? sender, EventArgs e) {
+        private void _mediaStop(object? sender, EventArgs e)
+        {
             mediaStop.Invoke(this, EventArgs.Empty);
         }
         public string Path
@@ -56,6 +61,11 @@ namespace GridPlayer
                 mediaController.Visibility = Visibility.Hidden;
                 timer.Stop();
             };
+        }
+
+        private void mediaElement_MediaOpened(object sender, RoutedEventArgs e)
+        {
+            mediaOpen.Invoke(this, e);
         }
     }
 }

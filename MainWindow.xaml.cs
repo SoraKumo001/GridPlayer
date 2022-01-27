@@ -45,6 +45,7 @@ namespace GridPlayer
         private string settingsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "/GridPlayer";
         private string settingsFile = "Settings.json";
         private Settings? settings;
+        private double ratio = 16.0 / 9.0;
         public MainWindow()
         {
             InitializeComponent();
@@ -125,6 +126,7 @@ namespace GridPlayer
         {
             var mediaPlayer = new MediaPlayer();
             mediaPlayer.mediaStop += mediaStop;
+            mediaPlayer.mediaOpen += mediaOpen;
             mediaPlayer.play(path);
             mediaPlayer.Position = position;
             grid.Children.Add(mediaPlayer);
@@ -132,25 +134,42 @@ namespace GridPlayer
         }
         private void layout()
         {
-            //16:9
-            var width = grid.ActualWidth / 4;
-            var height = grid.ActualHeight / 3;
+            var width = grid.ActualWidth / this.ratio;
+            var height = grid.ActualHeight * this.ratio;
             var ratio = width / height;
             var count = grid.Children.Count;
-            var wCount = 1.0;
-            var hCount = 1.0;
-            while (wCount * hCount < count)
+            var wCount = 0;
+            var hCount = 0;
+            var max = 0.0;
+            for (var y = 1; y <= count; y++)
             {
-                if (hCount / wCount * ratio > 1)
-                    ++wCount;
-                else
-                    ++hCount;
+                for (var x = 1; x <= count; x++)
+                {
+                    if (x * y < count)
+                        continue;
+                    var w = grid.ActualWidth / x;
+                    var h = grid.ActualHeight / y;
+                    var r = w / h / this.ratio;
+                    var v = r < 1.0 ? w * h * r : w * h / r;
+                    if (v > max)
+                    {
+                        max = v;
+                        hCount = y;
+                        wCount = x;
+                    }
+
+                }
             }
-            var over = wCount * hCount - count;
-            if (over >= wCount)
-                --hCount;
-            else if (over >= hCount)
-                --wCount;
+            while (count > 0)
+            {
+                var over = wCount * hCount - count;
+                if (over >= wCount)
+                    --hCount;
+                else if (over >= hCount)
+                    --wCount;
+                else
+                    break;
+            }
             grid.ColumnDefinitions.Clear();
             grid.RowDefinitions.Clear();
             for (var i = 0; i < wCount; i++)
@@ -192,6 +211,28 @@ namespace GridPlayer
             if (sender != null)
             {
                 grid.Children.Remove((UIElement)sender);
+                layout();
+            }
+        }
+        private void mediaOpen(object? sender, EventArgs e)
+        {
+
+            if (grid.Children.Count > 0 && sender != null)
+            {
+                var ratio = 0.0;
+                var count = 0;
+                foreach (MediaPlayer player in grid.Children)
+                {
+                    var media = player.media;
+                    if (media != null && media.NaturalVideoWidth > 0 && media.NaturalVideoHeight > 0)
+                    {
+                        ratio += (double)media.NaturalVideoWidth / media.NaturalVideoHeight;
+                        count++;
+                    }
+                }
+                ratio /= count;
+                if (ratio > 0)
+                    this.ratio = ratio;
                 layout();
             }
         }

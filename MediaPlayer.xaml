@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" MouseLeave="UserControl_MouseLeave" MouseMove="UserControl_MouseMove" Loaded="UserControl_Loaded">
     <Grid x:Name="grid" Background="Black">
-        <MediaElement x:Name="mediaElement" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <MediaElement x:Name="mediaElement" HorizontalAlignment="Center" VerticalAlignment="Center" MediaOpened="mediaElement_MediaOpened" />
         <local:MediaController x:Name="mediaController" Width="Auto" Height="32" VerticalAlignment="Bottom" Visibility="Hidden"/>
     </Grid>
 </UserControl>
