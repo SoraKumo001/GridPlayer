@@ -134,12 +134,9 @@ namespace GridPlayer
         }
         private void layout()
         {
-            var width = grid.ActualWidth / this.ratio;
-            var height = grid.ActualHeight * this.ratio;
-            var ratio = width / height;
             var count = grid.Children.Count;
-            var wCount = 0;
-            var hCount = 0;
+            var xCount = 0;
+            var yCount = 0;
             var max = 0.0;
             for (var y = 1; y <= count; y++)
             {
@@ -154,37 +151,37 @@ namespace GridPlayer
                     if (v > max)
                     {
                         max = v;
-                        hCount = y;
-                        wCount = x;
+                        yCount = y;
+                        xCount = x;
                     }
 
                 }
             }
             while (count > 0)
             {
-                var over = wCount * hCount - count;
-                if (over >= wCount)
-                    --hCount;
-                else if (over >= hCount)
-                    --wCount;
+                var over = xCount * yCount - count;
+                if (over >= xCount)
+                    --yCount;
+                else if (over >= yCount)
+                    --xCount;
                 else
                     break;
             }
             grid.ColumnDefinitions.Clear();
             grid.RowDefinitions.Clear();
-            for (var i = 0; i < wCount; i++)
+            for (var i = 0; i < xCount; i++)
             {
                 grid.ColumnDefinitions.Add(new ColumnDefinition());
             }
-            for (var i = 0; i < hCount; i++)
+            for (var i = 0; i < yCount; i++)
             {
                 grid.RowDefinitions.Add(new RowDefinition());
             }
             for (var i = 0; i < count; i++)
             {
                 var control = grid.Children[i];
-                Grid.SetRow(control, i / (int)wCount);
-                Grid.SetColumn(control, i % (int)wCount);
+                Grid.SetRow(control, i / (int)xCount);
+                Grid.SetColumn(control, i % (int)xCount);
             }
         }
 

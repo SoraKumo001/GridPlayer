@@ -39,7 +39,7 @@ namespace GridPlayer
         }
         public string Path
         {
-            get { return mediaElement.Source.AbsolutePath; }
+            get { return mediaElement.Source.LocalPath; }
         }
         public double Position
         {
