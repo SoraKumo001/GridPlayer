@@ -11,9 +11,6 @@ namespace GridPlayer
     public partial class AppController : UserControl
     {
 
-        public event AppEventHandler controlEvents = (sender, e) => { };
-        public bool IsVolume { get { return volumeController.IsVolume; } set { volumeController.IsVolume = value; } }
-        public double Volume { get { return volumeController.Volume; } set { volumeController.Volume = value; } }
         public AppController()
         {
             InitializeComponent();
@@ -21,7 +18,8 @@ namespace GridPlayer
 
         private void clearMedia_Click(object sender, RoutedEventArgs e)
         {
-            controlEvents.Invoke(this, new AppEventArgs { type = "clear" });
+            var settings = ((App)Application.Current).settings;
+            settings.mediaList[0].mediaData.Clear();
         }
         public void active()
         {
@@ -42,9 +40,11 @@ namespace GridPlayer
             active();
         }
 
-        private void VolumeController_controlEvents(object sender, AppEventArgs e)
+        private void listMedia_Click(object sender, RoutedEventArgs e)
         {
-            controlEvents.Invoke(sender, e);
+            var w = new MediaListWindow();
+            w.Owner = Window.GetWindow(this);
+            w.Show();
         }
     }
 }

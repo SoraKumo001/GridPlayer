@@ -1,0 +1,92 @@
+﻿<Window x:Class="GridPlayer.MediaListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GridPlayer"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        Title="MediaListWindow" Height="450" Width="800" Loaded="Window_Loaded" MouseDown="Window_MouseDown" >
+    <Window.Resources>
+        <local:FixWidth x:Key="fixWidth"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="32px"/>
+            </Grid.RowDefinitions>
+            <ListView x:Name="mediaNameList" SelectionChanged="mediaNameList_SelectionChanged" SizeChanged="ListView_SizeChanged" >
+                <ListView.Resources>
+                    <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItem}">
+                        <EventSetter Event="PreviewMouseLeftButtonDown" Handler="mediaNameList_MouseDown"/>
+                        <EventSetter Event="MouseDoubleClick" Handler="mediaNameList_MouseDoubleClick"/>
+                    </Style>
+                </ListView.Resources>
+                <ListView.View >
+                    <GridView >
+                        <GridViewColumn Header="Name" Width="{Binding ActualWidth, ElementName=mediaNameList,Converter={StaticResource fixWidth}}">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <TextBlock Text="{Binding name}" MouseDown="TextBlock_MouseDown" Width="{Binding ActualWidth, ElementName=mediaNameList,Converter={StaticResource fixWidth}}"/>
+                                        <TextBox Text="{Binding name}" 
+                                                 Visibility="Collapsed" 
+                                                 LostFocus="txtbox_LostFocus"
+                                                 Width="{Binding ActualWidth, ElementName=mediaNameList,Converter={StaticResource fixWidth}}" KeyDown="TextBox_KeyDown"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Grid  Grid.Row="1" Background="Gray">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="pathCopy" Click="pathCopy_Click">
+                    <Image Source="/Images/outline_file_copy_white_48dp.png"/>
+                </Button>
+                <Button x:Name="nameDelete" Grid.Column="1" Click="nameDelete_Click">
+                    <Image Source="/Images/delete-outline.png"/>
+                </Button>
+            </Grid>
+        </Grid>
+        <GridSplitter HorizontalAlignment="Stretch" Width="8" Grid.Column="1" />
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="32px"/>
+            </Grid.RowDefinitions>
+            <ListView x:Name="mediaPathList"  AlternationCount="2" SizeChanged="ListView_SizeChanged">
+                <ListView.Resources>
+                    <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItem}">
+                        <EventSetter Event="PreviewMouseLeftButtonDown" Handler="mediaNameList_MouseDown"/>
+                        <EventSetter Event="MouseDoubleClick" Handler="mediaNameList_MouseDoubleClick"/>
+                    </Style>
+                </ListView.Resources>
+                <ListView.View >
+                    <GridView >
+                        <GridViewColumn Header="Path" DisplayMemberBinding="{Binding path}" 
+                                        Width="{Binding ActualWidth, ElementName=mediaPathList,Converter={StaticResource fixWidth}}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Grid Grid.Row="1" Background="Gray">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="pathDelete" Grid.Column="1" Click="pathDelete_Click">
+                    <Image Source="/Images/delete-outline.png"/>
+                </Button>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

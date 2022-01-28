@@ -1,13 +1,22 @@
-﻿<Window x:Class="GridPlayer.MainWindow"
+﻿<Window xmlns:GridPlayer="clr-namespace:GridPlayer"  x:Class="GridPlayer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:GridPlayer"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         mc:Ignorable="d"
-        Title="GridPlayer" Height="450" Width="800" Drop="Window_Drop" AllowDrop="True" DragEnter="Window_DragEnter" SizeChanged="Window_SizeChanged" Loaded="Window_Loaded" Background="Black" Closing="Window_Closing" MouseDown="Window_MouseDown" MouseMove="Window_MouseMove">
+        DataContext="WindowStatus"
+        Title="GridPlayer" 
+        Left="{Binding Left,Mode=TwoWay}"
+        Top="{Binding Top,Mode=TwoWay}"
+        Height="{Binding Height,Mode=TwoWay}" Width="{Binding Width,Mode=TwoWay}" 
+        Drop="Window_Drop" AllowDrop="True" DragEnter="Window_DragEnter" 
+        Loaded="Window_Loaded" Background="Black" 
+        MouseDown="Window_MouseDown" 
+        MouseMove="Window_MouseMove"
+        Closing="Window_Closing" 
+        d:DesignHeight="507.96" d:DesignWidth="790.4" SizeChanged="Window_SizeChanged">
     <Grid>
         <Grid x:Name="grid"  />
-        <local:AppController x:Name="appController" HorizontalAlignment="Left" VerticalAlignment="Top" controlEvents="appController_controlEvents" Opacity="0"/>
+        <GridPlayer:AppController  x:Name="appController" HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0"/>
     </Grid>
 </Window>

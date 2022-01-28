@@ -1,44 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
-
-class MediaData
-{
-    public MediaData(string path, double position)
-    {
-        this.path = path;
-        this.position = position;
-    }
-    public string path { get; set; }
-    public double position { get; set; }
-}
-class WindowStatus
-{
-    public double width { get; set; } = 640;
-    public double height { get; set; } = 480;
-    public double x { get; set; } = 0;
-    public double y { get; set; } = 0;
-}
-
-class AppStatus
-{
-    public bool isVolume { get; set; } = true;
-    public double volume { get; set; } = 100;
-}
-
-class Settings
-{
-    public List<MediaData> mediaDatas { get; set; } = new();
-    public WindowStatus windowStatus { get; set; } = new();
-    public AppStatus appStatus { get; set; } = new();
-
-}
 
 namespace GridPlayer
 {
@@ -49,82 +21,18 @@ namespace GridPlayer
     public partial class MainWindow : Window
     {
         private bool isFullScreen = false;
-        private string settingsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "/GridPlayer";
-        private string settingsFile = "Settings.json";
-        private Settings? settings;
+        private Settings settings;
         private double ratio = 16.0 / 9.0;
         public MainWindow()
         {
             InitializeComponent();
-            loadSettings();
+            settings = ((App)Application.Current).settings;
+            DataContext = settings.windowStatus;
         }
-        private void saveSettings()
-        {
-            var settings = new Settings()
-            {
-                windowStatus = new WindowStatus()
-                {
-                    x = Left,
-                    y = Top,
-                    width = Width,
-                    height = Height,
-                },
-                appStatus = new AppStatus
-                {
-                    isVolume = appController.IsVolume,
-                    volume = appController.Volume
-                }
-
-            };
-
-            var mediaDatas = new List<MediaData>();
-
-            foreach (MediaPlayer media in grid.Children)
-            {
-                mediaDatas.Add(new MediaData(media.Path, media.Position));
-            }
-            settings.mediaDatas = mediaDatas;
+        private ObservableCollection<MediaData> mediaDatas { get { return settings.mediaList[0].mediaData; } }
 
 
 
-            Directory.CreateDirectory(settingsPath);
-            string jsonString = JsonSerializer.Serialize(settings);
-            File.WriteAllText(settingsPath + "/" + settingsFile, jsonString);
-        }
-        private void loadSettings()
-        {
-            try
-            {
-                var jsonString = File.ReadAllText(settingsPath + "/" + settingsFile);
-                if (jsonString != null)
-                {
-
-                    var settings = JsonSerializer.Deserialize<Settings>(jsonString);
-                    if (settings != null)
-                    {
-                        this.settings = settings;
-                    }
-                }
-
-            }
-            catch (Exception) { }
-        }
-
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            base.OnSourceInitialized(e);
-
-            if (settings?.windowStatus != null)
-            {
-                var x = settings.windowStatus.x;
-                var y = settings.windowStatus.y;
-                Width = Math.Min(settings.windowStatus.width, SystemParameters.WorkArea.Width);
-                Height = Math.Min(settings.windowStatus.height, SystemParameters.WorkArea.Height);
-
-                Left = x + Width > SystemParameters.WorkArea.Width ? SystemParameters.WorkArea.Width - Width : x;
-                Top = y + Height > SystemParameters.WorkArea.Height ? SystemParameters.WorkArea.Height - Height : y;
-            }
-        }
         private void Window_DragEnter(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.All;
@@ -135,21 +43,62 @@ namespace GridPlayer
             if (dropFiles == null) return;
             foreach (var file in dropFiles)
             {
-                addMedia(file, 0);
+                mediaDatas.Add(new MediaData(file, 0));
             }
 
         }
-        private void addMedia(string path, double position)
+        private void updateMedia()
+        {
+            var mediaPlayers = new MediaPlayer?[grid.Children.Count];
+            grid.Children.CopyTo(mediaPlayers, 0);
+
+            var newList = new List<MediaPlayer?>();
+            foreach (var media in mediaDatas)
+            {
+                var index = Array.FindIndex(mediaPlayers, (v) => v != null && v.Path == media.path);
+                if (index > 0)
+                {
+                    newList.Add(mediaPlayers[index]);
+                    mediaPlayers[index] = null;
+                }
+                else
+                {
+                    var mediaPlayer = createMedia(media.path, media.position);
+                    newList.Add(mediaPlayer);
+                }
+            }
+            for (var i = 0; i < newList.Count; i++)
+            {
+                if (i >= grid.Children.Count)
+                {
+                    grid.Children.Insert(i, newList[i]);
+                }
+                else
+                {
+                    var child = (MediaPlayer)grid.Children[i];
+                    if (child.Path != newList[i]?.Path)
+                    {
+                        if (newList[i]?.Parent != null)
+                            grid.Children.Remove(newList[i]);
+                        grid.Children.Insert(i, newList[i]);
+                    }
+                }
+            }
+            if (grid.Children.Count > newList.Count)
+            {
+                grid.Children.RemoveRange(newList.Count, grid.Children.Count - newList.Count);
+            }
+            layout();
+        }
+        private MediaPlayer createMedia(string path, double position)
         {
             var mediaPlayer = new MediaPlayer();
             mediaPlayer.mediaStop += mediaStop;
             mediaPlayer.mediaOpen += mediaOpen;
             mediaPlayer.play(path);
             mediaPlayer.Position = position;
-            mediaPlayer.media.IsMuted = !appController.IsVolume;
-            mediaPlayer.media.Volume = appController.Volume / 100;
-            grid.Children.Add(mediaPlayer);
-            layout();
+            return mediaPlayer;
+
         }
         private void layout()
         {
@@ -204,30 +153,26 @@ namespace GridPlayer
             }
         }
 
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            layout();
-        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
 
-
-            if (settings != null)
-            {
-                appController.IsVolume = settings.appStatus.isVolume;
-                appController.Volume = settings.appStatus.volume;
-                foreach (var media in settings.mediaDatas)
-                {
-                    addMedia(media.path, media.position);
-                }
-            }
-
+            mediaDatas.CollectionChanged += MediaDatas_CollectionChanged;
+            updateMedia();
         }
+
+        private void MediaDatas_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            updateMedia();
+        }
+
         private void mediaStop(object? sender, EventArgs e)
         {
             if (sender != null)
             {
+                int i;
+                for (i = 0; i < grid.Children.Count && grid.Children[i] != sender; i++) ;
+                mediaDatas.RemoveAt(i);
                 grid.Children.Remove((UIElement)sender);
                 layout();
             }
@@ -255,11 +200,6 @@ namespace GridPlayer
             }
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            saveSettings();
-        }
-
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -285,36 +225,18 @@ namespace GridPlayer
             appController.active();
         }
 
-        private void appController_controlEvents(object sender, AppEventArgs e)
-        {
-            switch (e.type)
-            {
-                case "clear":
-                    grid.Children.Clear();
-                    layout();
-                    break;
-                case "volumeOff":
-                    foreach (MediaPlayer player in grid.Children)
-                    {
-                        player.mediaElement.IsMuted = true;
-                    }
-                    layout();
-                    break;
-                case "volumeOn":
-                    foreach (MediaPlayer player in grid.Children)
-                    {
-                        player.mediaElement.IsMuted = false;
-                    }
-                    break;
-                case "volume":
-                    foreach (MediaPlayer player in grid.Children)
-                    {
-                        player.mediaElement.Volume = e.value / 100;
-                        Debug.WriteLine(e.value);
-                    }
-                    break;
-            }
 
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            for (var i = 0; i < grid.Children.Count; i++)
+            {
+                settings.mediaList[0].mediaData[i].position = ((MediaPlayer)grid.Children[i]).Position;
+            }
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            layout();
         }
     }
 }

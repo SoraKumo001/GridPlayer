@@ -19,6 +19,8 @@ namespace GridPlayer
         public MediaPlayer()
         {
             InitializeComponent();
+            var settings = ((App)Application.Current).settings;
+            DataContext = settings.appStatus;
 
         }
 
@@ -57,7 +59,8 @@ namespace GridPlayer
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            timer.Tick += (object? sender, EventArgs e) => {
+            timer.Tick += (object? sender, EventArgs e) =>
+            {
                 mediaController.Visibility = Visibility.Hidden;
                 timer.Stop();
             };

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,57 +21,32 @@ namespace GridPlayer
     /// </summary>
     public partial class VolumeController : UserControl
     {
-        public event AppEventHandler controlEvents = (sender, e) => { };
-        public bool IsVolume
-        {
-            set
-            {
-                if (value)
-                {
-                    volumeOn.Visibility = Visibility.Visible;
-                    volumeOff.Visibility = Visibility.Hidden;
-                    controlEvents.Invoke(this, new AppEventArgs { type = "volumeOn" });
-                }
-                else
-                {
-                    volumeOn.Visibility = Visibility.Hidden;
-                    volumeOff.Visibility = Visibility.Visible;
-                    controlEvents.Invoke(this, new AppEventArgs { type = "volumeOff" });
-                }
-            }
-            get
-            {
-                return volumeOn.Visibility == Visibility.Visible;
-            }
-        }
-        public double Volume
-        {
-            get { return progressBar.Value; }
-            set { progressBar.Value = value; }
-        }
         public VolumeController()
         {
             InitializeComponent();
-        }
-
-        private void volumeOn_Click(object sender, RoutedEventArgs e)
-        {
-            IsVolume = false;
-        }
-
-        private void volumeOff_Click(object sender, RoutedEventArgs e)
-        {
-            IsVolume = true;
+            var settings = ((App)Application.Current).settings;
+            DataContext = settings.appStatus;
         }
 
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
 
             var pt = e.GetPosition((UIElement)sender);
-            var positiion = (pt.X - progressBar.Margin.Left) / progressBar.ActualWidth * 100;
-            progressBar.Value = Math.Clamp(positiion, 0, 100);
-            controlEvents.Invoke(this, new AppEventArgs { type = "volume", value = progressBar.Value });
-
+            var positiion = (pt.X - progressBar.Margin.Left) / progressBar.ActualWidth;
+            var settings = ((App)Application.Current).settings;
+            settings.appStatus.Volume = Math.Clamp(positiion, 0, 1);
         }
+        private void volumeOn_Click(object sender, RoutedEventArgs e)
+        {
+            var settings = ((App)Application.Current).settings;
+            settings.appStatus.IsMute = true;
+        }
+
+        private void volumeOff_Click(object sender, RoutedEventArgs e)
+        {
+            var settings = ((App)Application.Current).settings;
+            settings.appStatus.IsMute = false;
+        }
+
     }
 }

@@ -1,17 +1,18 @@
 ﻿<Application x:Class="GridPlayer.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:GridPlayer"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:GridPlayer"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <SolidColorBrush x:Key="NormalForegroundBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="NormalBackgroundBrush" Color="#CC141414"/>
         <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#CC323232"/>
         <SolidColorBrush x:Key="ActiveBackgroundBrush" Color="#FFA6A6D2"/>
         <Style TargetType="Button">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Name="HoverButtonBorder" BorderThickness="2" Background="{StaticResource NormalBackgroundBrush}">
+                        <Border Name="HoverButtonBorder" BorderThickness="2" Background="{StaticResource NormalBackgroundBrush}" Padding="4" CornerRadius="4">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -27,5 +28,44 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style TargetType="ListView">
+            <Setter Property="Background" Value="Black" />
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style TargetType="ListViewItem" x:Key="ListViewItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            Background="{TemplateBinding Background}" 
+                            Padding="0"
+                            SnapsToDevicePixels="true">
+                            <GridViewRowPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                    <Setter Property="Background" Value="#333333"/>
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                    <Setter Property="Background" Value="#111111" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True" >
+                    <Setter Property="Background" 
+                        Value="#222266" />
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True" >
+                    <Setter Property="Background" 
+                        Value="Gray" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" True="Collapsed" False="Visible" />
+        <local:BooleanToVisibilityConverter x:Key="ReverseBooleanToVisibilityConverter" True="Visible" False="Collapsed" />
+
     </Application.Resources>
 </Application>

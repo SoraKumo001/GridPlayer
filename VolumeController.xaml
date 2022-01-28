@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:GridPlayer"
+             xmlns:local="clr-namespace:GridPlayer" 
+             d:DataContext="{d:DesignInstance Type=local:AppStatus}"
              mc:Ignorable="d" 
              d:DesignHeight="24" d:DesignWidth="800">
 
@@ -12,14 +13,14 @@
             <ColumnDefinition Width="24"/>
             <ColumnDefinition Width="128"/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="volumeOn" Click="volumeOn_Click">
+        <Button x:Name="volumeOn" Click="volumeOn_Click" Visibility="{Binding IsMute,Converter={StaticResource BooleanToVisibilityConverter}}">
             <Image Source="/Images/outline_volume_up_white_48dp.png"/>
         </Button>
-        <Button x:Name="volumeOff" Click="volumeOff_Click" Visibility="Hidden">
+        <Button x:Name="volumeOff" Click="volumeOff_Click" Visibility="{Binding IsMute,Converter={StaticResource ReverseBooleanToVisibilityConverter}}">
             <Image Source="/Images/outline_volume_off_white_48dp.png"/>
         </Button>
         <Grid Grid.Column="1" MouseDown="Grid_MouseDown" Background="Transparent" >
-            <ProgressBar x:Name="progressBar" Height="8" VerticalAlignment="Center" Margin="8,0,8,0" Value="100"/>
+            <ProgressBar x:Name="progressBar" Height="8" VerticalAlignment="Center" Margin="8,0,8,0" Value="{Binding Volume,Mode=TwoWay}" Maximum="1" />
         </Grid>
     </Grid>
 </UserControl>

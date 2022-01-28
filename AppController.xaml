@@ -1,9 +1,8 @@
-﻿<UserControl x:Name="appController" x:Class="GridPlayer.AppController"
+﻿<UserControl xmlns:GridPlayer="clr-namespace:GridPlayer"  x:Name="appController" x:Class="GridPlayer.AppController"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:GridPlayer"
              mc:Ignorable="d" 
               d:DesignHeight="24" Background="#CC141414" MouseMove="appController_MouseMove" MouseLeave="appController_MouseLeave"
              >
@@ -19,11 +18,15 @@
     <Grid Opacity="0.8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="24"/>
+            <ColumnDefinition Width="24"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Button x:Name="clearMedia" Grid.Column="0" Click="clearMedia_Click" >
             <Image Source="/Images/delete-outline.png"  />
         </Button>
-        <local:VolumeController x:Name="volumeController" Grid.Column="1" controlEvents="VolumeController_controlEvents"/>
+        <Button x:Name="listMedia" Grid.Column="1" Click="listMedia_Click" >
+            <Image Source="/Images/outline_list_alt_white_48dp.png"  />
+        </Button>
+        <GridPlayer:VolumeController x:Name="volumeController" Grid.Column="2"/>
     </Grid>
 </UserControl>
