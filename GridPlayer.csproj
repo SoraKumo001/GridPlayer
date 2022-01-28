@@ -11,12 +11,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\delete-outline.png" />
+    <None Remove="Images\outline_volume_off_white_48dp.png" />
+    <None Remove="Images\outline_volume_up_white_48dp.png" />
     <None Remove="Images\pause-circle-outline.png" />
     <None Remove="Images\play-circle-outline.png" />
     <None Remove="Images\stop-circle-outline.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\delete-outline.png" />
+    <Resource Include="Images\outline_volume_off_white_48dp.png" />
+    <Resource Include="Images\outline_volume_up_white_48dp.png" />
     <Resource Include="Images\pause-circle-outline.png" />
     <Resource Include="Images\play-circle-outline.png" />
     <Resource Include="Images\stop-circle-outline.png" />

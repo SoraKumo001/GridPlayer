@@ -101,8 +101,8 @@ namespace GridPlayer
             {
                 var totalSec = mediaElement.NaturalDuration.TimeSpan.TotalSeconds;
                 var pt = e.GetPosition((UIElement)sender);
-                var positiion = pt.X / progressBar.ActualWidth * totalSec;
-                mediaElement.Position = TimeSpan.FromSeconds(positiion);
+                var positiion = (pt.X - progressBar.Margin.Left) / progressBar.ActualWidth * totalSec;
+                mediaElement.Position = TimeSpan.FromSeconds(Math.Max(positiion,0));
             }
         }
 

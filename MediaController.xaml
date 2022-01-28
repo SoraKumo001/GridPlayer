@@ -5,36 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GridPlayer"
              mc:Ignorable="d" 
-             d:DesignHeight="32" Width="624" Background="#CC141414" MouseDown="UserControl_MouseDown"
+             d:DesignHeight="32" d:DesignWidth="624" Background="#CC141414" MouseDown="UserControl_MouseDown"
 
              >
-    <UserControl.Resources>
-        <SolidColorBrush x:Key="NormalBackgroundBrush" Color="#CC141414"/>
-        <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#CC323232"/>
-        <SolidColorBrush x:Key="ActiveBackgroundBrush" Color="#CC323264"/>
-        <Style TargetType="Button">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Name="HoverButtonBorder" BorderThickness="2" Background="{StaticResource NormalBackgroundBrush}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HoverButtonBorder" Property="Background" Value="{StaticResource HoverBackgroundBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="HoverButtonBorder" Property="Background" Value="{StaticResource ActiveBackgroundBrush}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-
-                </Setter.Value>
-            </Setter>
-            
-
-        </Style>
-    </UserControl.Resources>
     <Grid >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="32"/>
@@ -50,8 +23,8 @@
         <Button x:Name="stopButton" Grid.Column="1" Click="stopButton_Click" >
             <Image Source="/Images/stop-circle-outline.png"  />
         </Button>
-        <Grid x:Name="gridProgress" Grid.Column="2" Margin="4,0,4,0" Background="Transparent" MouseDown="gridProgress_MouseDown">
-            <ProgressBar x:Name="progressBar"  Height="8" VerticalAlignment="Center"  />
+        <Grid x:Name="gridProgress" Grid.Column="2" Margin="0,0,0,0" Background="Transparent" MouseDown="gridProgress_MouseDown">
+            <ProgressBar x:Name="progressBar"  Height="8" VerticalAlignment="Center" Margin="8,0,8,0"  />
         </Grid>
     </Grid>
 </UserControl>

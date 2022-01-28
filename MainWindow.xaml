@@ -5,6 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GridPlayer"
         mc:Ignorable="d"
-        Title="GridPlayer" Height="450" Width="800" Drop="Window_Drop" AllowDrop="True" DragEnter="Window_DragEnter" SizeChanged="Window_SizeChanged" Loaded="Window_Loaded" Background="Black" Closing="Window_Closing" MouseDown="Window_MouseDown">
-    <Grid x:Name="grid"  />
+        Title="GridPlayer" Height="450" Width="800" Drop="Window_Drop" AllowDrop="True" DragEnter="Window_DragEnter" SizeChanged="Window_SizeChanged" Loaded="Window_Loaded" Background="Black" Closing="Window_Closing" MouseDown="Window_MouseDown" MouseMove="Window_MouseMove">
+    <Grid>
+        <Grid x:Name="grid"  />
+        <local:AppController x:Name="appController" HorizontalAlignment="Left" VerticalAlignment="Top" controlEvents="appController_controlEvents" Opacity="0"/>
+    </Grid>
 </Window>

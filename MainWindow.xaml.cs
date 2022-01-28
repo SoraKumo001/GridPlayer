@@ -26,10 +26,17 @@ class WindowStatus
     public double y { get; set; } = 0;
 }
 
+class AppStatus
+{
+    public bool isVolume { get; set; } = true;
+    public double volume { get; set; } = 100;
+}
+
 class Settings
 {
     public List<MediaData> mediaDatas { get; set; } = new();
     public WindowStatus windowStatus { get; set; } = new();
+    public AppStatus appStatus { get; set; } = new();
 
 }
 
@@ -53,22 +60,32 @@ namespace GridPlayer
         }
         private void saveSettings()
         {
-            var settings = new Settings();
+            var settings = new Settings()
+            {
+                windowStatus = new WindowStatus()
+                {
+                    x = Left,
+                    y = Top,
+                    width = Width,
+                    height = Height,
+                },
+                appStatus = new AppStatus
+                {
+                    isVolume = appController.IsVolume,
+                    volume = appController.Volume
+                }
 
-            var windowStatus = new WindowStatus();
-            windowStatus.x = Left;
-            windowStatus.y = Top;
-            windowStatus.width = Width;
-            windowStatus.height = Height;
-            settings.windowStatus = windowStatus;
-
+            };
 
             var mediaDatas = new List<MediaData>();
+
             foreach (MediaPlayer media in grid.Children)
             {
                 mediaDatas.Add(new MediaData(media.Path, media.Position));
             }
             settings.mediaDatas = mediaDatas;
+
+
 
             Directory.CreateDirectory(settingsPath);
             string jsonString = JsonSerializer.Serialize(settings);
@@ -129,6 +146,8 @@ namespace GridPlayer
             mediaPlayer.mediaOpen += mediaOpen;
             mediaPlayer.play(path);
             mediaPlayer.Position = position;
+            mediaPlayer.media.IsMuted = !appController.IsVolume;
+            mediaPlayer.media.Volume = appController.Volume / 100;
             grid.Children.Add(mediaPlayer);
             layout();
         }
@@ -194,8 +213,10 @@ namespace GridPlayer
         {
 
 
-            if (settings?.mediaDatas != null)
+            if (settings != null)
             {
+                appController.IsVolume = settings.appStatus.isVolume;
+                appController.Volume = settings.appStatus.volume;
                 foreach (var media in settings.mediaDatas)
                 {
                     addMedia(media.path, media.position);
@@ -255,6 +276,43 @@ namespace GridPlayer
                     WindowState = WindowState.Maximized;
                 }
                 isFullScreen = !isFullScreen;
+            }
+
+        }
+
+        private void Window_MouseMove(object sender, MouseEventArgs e)
+        {
+            appController.active();
+        }
+
+        private void appController_controlEvents(object sender, AppEventArgs e)
+        {
+            switch (e.type)
+            {
+                case "clear":
+                    grid.Children.Clear();
+                    layout();
+                    break;
+                case "volumeOff":
+                    foreach (MediaPlayer player in grid.Children)
+                    {
+                        player.mediaElement.IsMuted = true;
+                    }
+                    layout();
+                    break;
+                case "volumeOn":
+                    foreach (MediaPlayer player in grid.Children)
+                    {
+                        player.mediaElement.IsMuted = false;
+                    }
+                    break;
+                case "volume":
+                    foreach (MediaPlayer player in grid.Children)
+                    {
+                        player.mediaElement.Volume = e.value / 100;
+                        Debug.WriteLine(e.value);
+                    }
+                    break;
             }
 
         }

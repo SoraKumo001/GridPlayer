@@ -4,6 +4,28 @@
              xmlns:local="clr-namespace:GridPlayer"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <SolidColorBrush x:Key="NormalBackgroundBrush" Color="#CC141414"/>
+        <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#CC323232"/>
+        <SolidColorBrush x:Key="ActiveBackgroundBrush" Color="#FFA6A6D2"/>
+        <Style TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="HoverButtonBorder" BorderThickness="2" Background="{StaticResource NormalBackgroundBrush}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HoverButtonBorder" Property="Background" Value="{StaticResource HoverBackgroundBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="HoverButtonBorder" Property="Background" Value="{StaticResource ActiveBackgroundBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Application.Resources>
 </Application>

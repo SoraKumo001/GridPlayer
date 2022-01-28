@@ -14,4 +14,10 @@ namespace GridPlayer
     public partial class App : Application
     {
     }
+    public class AppEventArgs
+    {
+        public string type = "";
+        public double value = 0;
+    }
+    public delegate void AppEventHandler(object? sender, AppEventArgs e);
 }
