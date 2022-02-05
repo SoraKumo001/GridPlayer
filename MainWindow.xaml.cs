@@ -199,23 +199,26 @@ namespace GridPlayer
                 layout();
             }
         }
-
+        private void setScreenMode(bool isFullScreen)
+        {
+            if (isFullScreen)
+            {
+                WindowStyle = WindowStyle.None;
+                WindowState = WindowState.Maximized;
+            }
+            else
+            {
+                WindowStyle = WindowStyle.SingleBorderWindow;
+                WindowState = WindowState.Normal;
+            }
+            this.isFullScreen = isFullScreen;
+        }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount > 1)
             {
-                if (isFullScreen)
-                {
-                    WindowStyle = WindowStyle.SingleBorderWindow;
-                    WindowState = WindowState.Normal;
-                }
-                else
-                {
-                    WindowStyle = WindowStyle.None;
-                    WindowState = WindowState.Maximized;
-                }
-                isFullScreen = !isFullScreen;
+                setScreenMode(!isFullScreen);
             }
 
         }
@@ -237,6 +240,57 @@ namespace GridPlayer
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             layout();
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.F:
+                    setScreenMode(!isFullScreen);
+                    break;
+                case Key.Space:
+                    bool isPlay = false;
+                    foreach (MediaPlayer p in grid.Children)
+                    {
+                        if (p.IsPlaying)
+                        {
+                            isPlay = true;
+                            break;
+                        }
+                    }
+                    foreach (MediaPlayer p in grid.Children)
+                    {
+                        if (isPlay)
+                        {
+                            p.Pause();
+
+                        }
+                        else
+                        {
+                            p.Play();
+                        }
+                    }
+                    break;
+                case Key.Right:
+                    foreach (MediaPlayer p in grid.Children)
+                    {
+                        p.media.Position = p.media.Position.Add(TimeSpan.FromSeconds(10));
+                    }
+                    break;
+                case Key.Left:
+                    foreach (MediaPlayer p in grid.Children)
+                    {
+                        p.media.Position = p.media.Position.Subtract(TimeSpan.FromSeconds(10));
+                    }
+                    break;
+                case Key.Up:
+                    settings.appStatus.Volume = Math.Min(settings.appStatus.Volume + 0.1, 1);
+                    break;
+                case Key.Down:
+                    settings.appStatus.Volume = Math.Max(settings.appStatus.Volume - 0.1, 0);
+                    break;
+            }
         }
     }
 }

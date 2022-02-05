@@ -24,8 +24,12 @@ namespace GridPlayer
         public VolumeController()
         {
             InitializeComponent();
-            var settings = ((App)Application.Current).settings;
-            DataContext = settings.appStatus;
+            try
+            {
+                var settings = ((App)Application.Current).settings;
+                DataContext = settings.appStatus;
+            }
+            catch (Exception) { }
         }
 
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)

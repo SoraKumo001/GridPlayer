@@ -15,6 +15,7 @@ namespace GridPlayer
         public event EventHandler mediaStop = (sender, e) => { };
         public event EventHandler mediaOpen = (sender, e) => { };
         public DispatcherTimer timer = new();
+        bool isPlaying = false;
         public MediaElement media { get { return mediaElement; } }
         public MediaPlayer()
         {
@@ -32,12 +33,25 @@ namespace GridPlayer
         {
             mediaElement.LoadedBehavior = MediaState.Manual;
             mediaElement.Source = new Uri(path);
-            mediaController.setMedia(mediaElement);
+            mediaController.setMedia(this);
             mediaController.mediaStop += _mediaStop;
+            Play();
         }
+        public void Play()
+        {
+            isPlaying = true;
+            mediaElement.Play();
+        }
+        public void Pause()
+        {
+            isPlaying = false;
+            mediaElement.Pause();
+        }
+        public bool IsPlaying { get { return isPlaying; } }
         private void _mediaStop(object? sender, EventArgs e)
         {
             mediaStop.Invoke(this, EventArgs.Empty);
+            isPlaying = false;
         }
         public string Path
         {
@@ -49,6 +63,7 @@ namespace GridPlayer
             set { mediaElement.Position = TimeSpan.FromSeconds(value); }
 
         }
+
 
         private void UserControl_MouseMove(object sender, MouseEventArgs e)
         {

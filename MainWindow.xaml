@@ -14,7 +14,7 @@
         MouseDown="Window_MouseDown" 
         MouseMove="Window_MouseMove"
         Closing="Window_Closing" 
-        d:DesignHeight="507.96" d:DesignWidth="790.4" SizeChanged="Window_SizeChanged">
+        d:DesignHeight="507.96" d:DesignWidth="790.4" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown">
     <Grid>
         <Grid x:Name="grid"  />
         <GridPlayer:AppController  x:Name="appController" HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0"/>

@@ -13,17 +13,18 @@ namespace GridPlayer
     public partial class MediaController : UserControl
     {
         public event EventHandler mediaStop = (sender, e) => { };
-        private MediaElement? mediaElement;
+        private MediaPlayer? player;
         public MediaController()
         {
             InitializeComponent();
         }
-        public void setMedia(MediaElement media)
+        public void setMedia(MediaPlayer player)
         {
-            mediaElement = media;
+            this.player = player;
+            var mediaElement = player.media;
             if (mediaElement != null)
             {
-                DispatcherTimer timer = new ();
+                DispatcherTimer timer = new();
                 timer.Interval = TimeSpan.FromSeconds(0.1);
                 timer.Tick += timer_Tick;
                 timer.Start();
@@ -35,29 +36,32 @@ namespace GridPlayer
         }
         private void timer_Tick(object? sender, EventArgs e)
         {
-            if (mediaElement!=null && mediaElement.NaturalDuration.HasTimeSpan)
+            var mediaElement = player?.media;
+            if (mediaElement != null && mediaElement.NaturalDuration.HasTimeSpan)
             {
                 double nowSec = mediaElement.Position.TotalSeconds;
                 double totalSec = mediaElement.NaturalDuration.TimeSpan.TotalSeconds;
                 progressBar.Value = nowSec * 100 / totalSec;
-                
+
 
             }
         }
 
 
-        public void play() {
-            if (mediaElement != null)
+        public void play()
+        {
+            if (player != null)
             {
-                mediaElement.Play();
+                player.Play();
                 playButton.Visibility = Visibility.Hidden;
                 pauseButton.Visibility = Visibility.Visible;
             }
         }
-        public void pause() {
-            if (mediaElement != null)
+        public void pause()
+        {
+            if (player != null)
             {
-                mediaElement.Pause();
+                player.Pause();
                 playButton.Visibility = Visibility.Visible;
                 pauseButton.Visibility = Visibility.Hidden;
             }
@@ -83,6 +87,7 @@ namespace GridPlayer
 
         private void mediaEnded(object sender, RoutedEventArgs e)
         {
+            var mediaElement = player?.media;
             if (mediaElement != null)
             {
                 mediaElement.Position = TimeSpan.FromSeconds(0);
@@ -97,12 +102,13 @@ namespace GridPlayer
 
         private void gridProgress_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            var mediaElement = player?.media;
             if (mediaElement != null && mediaElement.NaturalDuration.HasTimeSpan)
             {
                 var totalSec = mediaElement.NaturalDuration.TimeSpan.TotalSeconds;
                 var pt = e.GetPosition((UIElement)sender);
                 var positiion = (pt.X - progressBar.Margin.Left) / progressBar.ActualWidth * totalSec;
-                mediaElement.Position = TimeSpan.FromSeconds(Math.Max(positiion,0));
+                mediaElement.Position = TimeSpan.FromSeconds(Math.Max(positiion, 0));
             }
         }
 
