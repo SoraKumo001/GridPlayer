@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -41,9 +41,8 @@ namespace GridPlayer
             {
                 double nowSec = mediaElement.Position.TotalSeconds;
                 double totalSec = mediaElement.NaturalDuration.TimeSpan.TotalSeconds;
-                progressBar.Value = nowSec * 100 / totalSec;
-
-
+                seekSlider.Value = nowSec / totalSec;
+                timeText.Text = string.Format("{0:mm\\:ss} / {1:mm\\:ss}", mediaElement.Position, mediaElement.NaturalDuration.TimeSpan);
             }
         }
 
@@ -100,15 +99,16 @@ namespace GridPlayer
         }
 
 
-        private void gridProgress_MouseDown(object sender, MouseButtonEventArgs e)
+        private void seekSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            var mediaElement = player?.media;
-            if (mediaElement != null && mediaElement.NaturalDuration.HasTimeSpan)
+            if (seekSlider.IsMouseOver && Mouse.LeftButton == MouseButtonState.Pressed)
             {
-                var totalSec = mediaElement.NaturalDuration.TimeSpan.TotalSeconds;
-                var pt = e.GetPosition((UIElement)sender);
-                var positiion = (pt.X - progressBar.Margin.Left) / progressBar.ActualWidth * totalSec;
-                mediaElement.Position = TimeSpan.FromSeconds(Math.Max(positiion, 0));
+                var mediaElement = player?.media;
+                if (mediaElement != null && mediaElement.NaturalDuration.HasTimeSpan)
+                {
+                    var totalSec = mediaElement.NaturalDuration.TimeSpan.TotalSeconds;
+                    mediaElement.Position = TimeSpan.FromSeconds(e.NewValue * totalSec);
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -32,14 +32,6 @@ namespace GridPlayer
             catch (Exception) { }
         }
 
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-
-            var pt = e.GetPosition((UIElement)sender);
-            var positiion = (pt.X - progressBar.Margin.Left) / progressBar.ActualWidth;
-            var settings = ((App)Application.Current).settings;
-            settings.appStatus.Volume = Math.Clamp(positiion, 0, 1);
-        }
         private void volumeOn_Click(object sender, RoutedEventArgs e)
         {
             var settings = ((App)Application.Current).settings;
