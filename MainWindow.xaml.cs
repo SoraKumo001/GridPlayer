@@ -56,7 +56,7 @@ namespace GridPlayer
             foreach (var media in mediaDatas)
             {
                 var index = Array.FindIndex(mediaPlayers, (v) => v != null && v.Path == media.path);
-                if (index > 0)
+                if (index >= 0)
                 {
                     newList.Add(mediaPlayers[index]);
                     mediaPlayers[index] = null;
@@ -103,53 +103,84 @@ namespace GridPlayer
         private void layout()
         {
             var count = grid.Children.Count;
+            if (count == 0) return;
+
             var xCount = 0;
             var yCount = 0;
             var max = 0.0;
+
+            // 1. Calculate the best grid size (NxM)
             for (var y = 1; y <= count; y++)
             {
                 for (var x = 1; x <= count; x++)
                 {
-                    if (x * y < count)
-                        continue;
+                    if (x * y < count) continue;
+
                     var w = grid.ActualWidth / x;
                     var h = grid.ActualHeight / y;
+                    if (w <= 0 || h <= 0) continue;
+
                     var r = w / h / this.ratio;
-                    var v = r < 1.0 ? w * h * r : w * h / r;
+                    var v = r < 1.0 ? r : 1.0 / r; // Match quality (0 to 1)
+                    
+                    // Prefer grids that have less empty cells
+                    v *= (double)count / (x * y);
+
                     if (v > max)
                     {
                         max = v;
                         yCount = y;
                         xCount = x;
                     }
-
                 }
             }
-            while (count > 0)
+
+            // Fallback
+            if (xCount == 0 || yCount == 0)
             {
-                var over = xCount * yCount - count;
-                if (over >= xCount)
-                    --yCount;
-                else if (over >= yCount)
-                    --xCount;
-                else
-                    break;
+                xCount = (int)Math.Ceiling(Math.Sqrt(count));
+                yCount = (int)Math.Ceiling((double)count / xCount);
             }
+
+            // 2. Clear and recreate definitions
             grid.ColumnDefinitions.Clear();
+            for (var i = 0; i < xCount; i++) grid.ColumnDefinitions.Add(new ColumnDefinition());
             grid.RowDefinitions.Clear();
-            for (var i = 0; i < xCount; i++)
-            {
-                grid.ColumnDefinitions.Add(new ColumnDefinition());
-            }
-            for (var i = 0; i < yCount; i++)
-            {
-                grid.RowDefinitions.Add(new RowDefinition());
-            }
+            for (var i = 0; i < yCount; i++) grid.RowDefinitions.Add(new RowDefinition());
+
+            // 3. Place items with Span logic to fill gaps
             for (var i = 0; i < count; i++)
             {
                 var control = grid.Children[i];
-                Grid.SetRow(control, i / (int)xCount);
-                Grid.SetColumn(control, i % (int)xCount);
+                int row = i / xCount;
+                int colInRow = i % xCount;
+
+                int itemsInThisRow = Math.Min(xCount, count - row * xCount);
+                int col = colInRow;
+                int colSpan = 1;
+                int rowSpan = 1;
+
+                // If this is the last row and it's not full, expand items to fill the width
+                if (row == yCount - 1 && itemsInThisRow < xCount)
+                {
+                    int baseSpan = xCount / itemsInThisRow;
+                    int extra = xCount % itemsInThisRow;
+
+                    colSpan = baseSpan + (colInRow < extra ? 1 : 0);
+                    
+                    // Calculate actual column offset
+                    int offset = 0;
+                    for (int j = 0; j < colInRow; j++)
+                    {
+                        offset += baseSpan + (j < extra ? 1 : 0);
+                    }
+                    col = offset;
+                }
+
+                Grid.SetRow(control, row);
+                Grid.SetColumn(control, col);
+                Grid.SetRowSpan(control, rowSpan);
+                Grid.SetColumnSpan(control, colSpan);
             }
         }
 
