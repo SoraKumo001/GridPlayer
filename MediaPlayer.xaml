@@ -10,6 +10,7 @@
     <Grid x:Name="grid" Background="Black">
         <MediaElement x:Name="mediaElement" HorizontalAlignment="Center" VerticalAlignment="Center" MediaOpened="mediaElement_MediaOpened" Volume="{Binding Volume}" IsMuted="{Binding IsMute}"/>
         <Image x:Name="animatedImage" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" anim:ImageBehavior.AutoStart="True" />
+        <Image x:Name="skiaImage" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
         <TextBlock x:Name="filenameText" Foreground="White" Background="#80000000" Padding="5,2" VerticalAlignment="Top" HorizontalAlignment="Stretch" Visibility="Hidden" IsHitTestVisible="False" TextTrimming="CharacterEllipsis"/>
         <local:MediaController x:Name="mediaController" Width="Auto" Height="32" VerticalAlignment="Bottom" Visibility="Hidden"/>
     </Grid>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
@@ -8,6 +8,7 @@
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 		<DebugType>full</DebugType>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -35,6 +36,8 @@
 	<ItemGroup>
 	  <PackageReference Include="AnimatedImage.Native" Version="2.1.2" />
 	  <PackageReference Include="AnimatedImage.Wpf" Version="2.1.4" />
+	  <PackageReference Include="SkiaSharp" Version="3.119.2" />
+	  <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.2" />
 	</ItemGroup>
 
 </Project>
