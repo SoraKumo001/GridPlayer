@@ -7,9 +7,27 @@
 		<UseWPF>true</UseWPF>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-		<DebugType>full</DebugType>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<SatelliteResourceLanguages>ja</SatelliteResourceLanguages>
+		<AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
 	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DebugType>full</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DebugType>none</DebugType>
+		<DebugSymbols>false</DebugSymbols>
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>false</SelfContained>
+		<IncludeNativeLibrariesForSelfContained>true</IncludeNativeLibrariesForSelfContained>
+	</PropertyGroup>
+
+	<Target Name="FinalCleanup" AfterTargets="Build;Publish" Condition="'$(Configuration)'=='Release'">
+		<Exec Command="powershell -Command &quot;$dirs = @('$(TargetDir)', '$(PublishDir)'); foreach ($d in $dirs) { if (Test-Path $d) { $r = Join-Path $d 'runtimes'; if (Test-Path $r) { Get-ChildItem $r | Where-Object { $_.Name -ne 'win-x64' } | Remove-Item -Recurse -Force }; Get-ChildItem $d -Filter *.pdb | Remove-Item -Force } }&quot;" IgnoreExitCode="true" />
+	</Target>
 
 	<ItemGroup>
 		<None Remove="Images\delete-outline.png" />
@@ -39,5 +57,6 @@
 	  <PackageReference Include="SkiaSharp" Version="3.119.2" />
 	  <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.2" />
 	</ItemGroup>
+
 
 </Project>
