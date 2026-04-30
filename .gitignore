@@ -363,3 +363,9 @@ MigrationBackup/
 FodyWeavers.xsd
 
 .vscode
+
+# Custom build results for MSIX
+PackageBuild/
+*.msix
+*.cer
+*.msixupload

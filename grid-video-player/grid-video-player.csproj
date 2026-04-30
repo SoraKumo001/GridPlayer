@@ -2,14 +2,19 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net6.0-windows</TargetFramework>
+		<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
 		<Nullable>enable</Nullable>
+		<RootNamespace>GridPlayer</RootNamespace>
 		<UseWPF>true</UseWPF>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<EnableMsixTooling>true</EnableMsixTooling>
 		<SatelliteResourceLanguages>ja</SatelliteResourceLanguages>
+		<NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604</NoWarn>
 		<AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
 	</PropertyGroup>
 
@@ -20,8 +25,9 @@
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<DebugType>none</DebugType>
 		<DebugSymbols>false</DebugSymbols>
-		<PublishSingleFile>true</PublishSingleFile>
+		<PublishSingleFile>false</PublishSingleFile>
 		<SelfContained>false</SelfContained>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<IncludeNativeLibrariesForSelfContained>true</IncludeNativeLibrariesForSelfContained>
 	</PropertyGroup>
 
@@ -54,6 +60,7 @@
 	<ItemGroup>
 	  <PackageReference Include="AnimatedImage.Native" Version="2.1.2" />
 	  <PackageReference Include="AnimatedImage.Wpf" Version="2.1.4" />
+	  <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1" />
 	  <PackageReference Include="SkiaSharp" Version="3.119.2" />
 	  <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.2" />
 	</ItemGroup>

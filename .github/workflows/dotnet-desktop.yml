@@ -2,48 +2,42 @@ name: .NET Core Desktop
 
 on:
   push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-
   build:
     runs-on: windows-2022 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore grid-video-player/grid-video-player.csproj
 
     - name: Build and Publish
       run: |
-        dotnet publish -c Release -r win-x64 --self-contained false
+        dotnet publish grid-video-player/grid-video-player.csproj -c Release -r win-x64 --self-contained false -o publish_output
 
-    - name: Packaging
-      if: startsWith(github.ref, 'refs/tags/v')
-      run:  Compress-Archive -Path bin/Release/net6.0-windows/win-x64/publish/* -DestinationPath GridPlayer.zip
+    - name: Create Zip Archive
+      run: Compress-Archive -Path publish_output/* -DestinationPath GridVideoPlayer.zip
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/v')
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        files: GridVideoPlayer.zip
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset
-      if: startsWith(github.ref, 'refs/tags/v')
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./GridPlayer.zip
-        asset_name: GridPlayer.zip
-        asset_content_type: application/zip
