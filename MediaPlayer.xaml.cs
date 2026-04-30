@@ -29,9 +29,11 @@ namespace GridPlayer
         private void UserControl_MouseLeave(object sender, MouseEventArgs e)
         {
             mediaController.Visibility = Visibility.Hidden;
+            filenameText.Visibility = Visibility.Hidden;
         }
         public void play(string path)
         {
+            filenameText.Text = System.IO.Path.GetFileName(path);
             if (path.ToLower().EndsWith(".webp") || path.ToLower().EndsWith(".gif"))
             {
                 mediaElement.Visibility = Visibility.Collapsed;
@@ -110,6 +112,7 @@ namespace GridPlayer
         private void UserControl_MouseMove(object sender, MouseEventArgs e)
         {
             mediaController.Visibility = Visibility.Visible;
+            filenameText.Visibility = Visibility.Visible;
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Start();
         }
@@ -119,6 +122,7 @@ namespace GridPlayer
             timer.Tick += (object? sender, EventArgs e) =>
             {
                 mediaController.Visibility = Visibility.Hidden;
+                filenameText.Visibility = Visibility.Hidden;
                 timer.Stop();
             };
         }
