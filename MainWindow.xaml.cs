@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -186,17 +186,18 @@ namespace GridPlayer
                 var count = 0;
                 foreach (MediaPlayer player in grid.Children)
                 {
-                    var media = player.media;
-                    if (media != null && media.NaturalVideoWidth > 0 && media.NaturalVideoHeight > 0)
+                    if (player.NaturalWidth > 0 && player.NaturalHeight > 0)
                     {
-                        ratio += (double)media.NaturalVideoWidth / media.NaturalVideoHeight;
+                        ratio += player.NaturalWidth / player.NaturalHeight;
                         count++;
                     }
                 }
-                ratio /= count;
-                if (ratio > 0)
+                if (count > 0)
+                {
+                    ratio /= count;
                     this.ratio = ratio;
-                layout();
+                    layout();
+                }
             }
         }
         private void setScreenMode(bool isFullScreen)
@@ -275,13 +276,15 @@ namespace GridPlayer
                 case Key.Right:
                     foreach (MediaPlayer p in grid.Children)
                     {
-                        p.media.Position = p.media.Position.Add(TimeSpan.FromSeconds(10));
+                        if (p.media.Visibility == Visibility.Visible)
+                            p.media.Position = p.media.Position.Add(TimeSpan.FromSeconds(10));
                     }
                     break;
                 case Key.Left:
                     foreach (MediaPlayer p in grid.Children)
                     {
-                        p.media.Position = p.media.Position.Subtract(TimeSpan.FromSeconds(10));
+                        if (p.media.Visibility == Visibility.Visible)
+                            p.media.Position = p.media.Position.Subtract(TimeSpan.FromSeconds(10));
                     }
                     break;
                 case Key.Up:

@@ -32,4 +32,9 @@
 		<Resource Include="Images\stop-circle-outline.png" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="AnimatedImage.Native" Version="2.1.2" />
+	  <PackageReference Include="AnimatedImage.Wpf" Version="2.1.4" />
+	</ItemGroup>
+
 </Project>
