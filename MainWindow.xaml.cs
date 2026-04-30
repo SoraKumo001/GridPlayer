@@ -41,7 +41,8 @@ namespace GridPlayer
         {
             var dropFiles = e.Data.GetData(System.Windows.DataFormats.FileDrop) as string[];
             if (dropFiles == null) return;
-            foreach (var file in dropFiles)
+            var mediaFiles = MediaFileHelper.GetAllMediaFiles(dropFiles);
+            foreach (var file in mediaFiles)
             {
                 mediaDatas.Add(new MediaData(file, 0));
             }
@@ -187,6 +188,14 @@ namespace GridPlayer
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to set priority class: {ex.Message}");
+            }
 
             mediaDatas.CollectionChanged += MediaDatas_CollectionChanged;
             updateMedia();

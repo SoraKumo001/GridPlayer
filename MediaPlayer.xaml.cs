@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using AnimatedImage.Wpf;
@@ -43,6 +44,7 @@ namespace GridPlayer
                 bitmap.UriSource = new Uri(path);
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
+                RenderOptions.SetBitmapScalingMode(animatedImage, BitmapScalingMode.LowQuality);
                 ImageBehavior.SetAnimatedSource(animatedImage, bitmap);
                 Dispatcher.BeginInvoke(new Action(() => mediaOpen.Invoke(this, EventArgs.Empty)), DispatcherPriority.Background);
             }

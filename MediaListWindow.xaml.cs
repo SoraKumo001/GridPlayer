@@ -267,7 +267,8 @@ namespace GridPlayer
                 if (files != null && mediaNameList.SelectedIndex >= 0)
                 {
                     var targetList = settings.mediaList[mediaNameList.SelectedIndex].mediaData;
-                    foreach (string file in files)
+                    var mediaFiles = MediaFileHelper.GetAllMediaFiles(files);
+                    foreach (string file in mediaFiles)
                     {
                         // Add new media to the list
                         targetList.Add(new MediaData(file, 0));
