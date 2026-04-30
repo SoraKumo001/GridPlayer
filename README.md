@@ -30,5 +30,5 @@ GridPlayer は、複数の動画やアニメーション画像を一つのウィ
 
 ## ダウンロード
 
-最新のリリースは以下のページからダウンロードできます：
+最新のリリースは以下のページからダウンロードできます： windows only  
 [GridPlayer Releases](https://github.com/SoraKumo001/GridPlayer/releases)
