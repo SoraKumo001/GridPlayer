@@ -1,3 +1,5 @@
+using AnimatedImage.Wpf;
+using SkiaSharp;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -9,8 +11,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using AnimatedImage.Wpf;
-using SkiaSharp;
 
 namespace GridPlayer
 {
@@ -25,10 +25,14 @@ namespace GridPlayer
         bool isPlaying = false;
         Settings settings;
         private CancellationTokenSource? _animationCts;
+        private CancellationTokenSource? _ffmeOpenCts;
         private WriteableBitmap? _skiaBitmap;
         private string _currentPath = "";
+        private bool _ffmeReady;
+        private bool _pendingFfmePlay;
+        private bool _isRestartingFfme;
 
-        public MediaElement media { get { return mediaElement; } }
+        public System.Windows.Controls.MediaElement media { get { return mediaElement; } }
         public MediaPlayer()
         {
             InitializeComponent();
@@ -45,18 +49,33 @@ namespace GridPlayer
         {
             _currentPath = path;
             _animationCts?.Cancel();
+            _ffmeOpenCts?.Cancel();
+            _ffmeReady = false;
+            _pendingFfmePlay = false;
             filenameText.Text = System.IO.Path.GetFileName(path);
 
             if (path.ToLower().EndsWith(".webp") || path.ToLower().EndsWith(".gif"))
             {
                 mediaElement.Visibility = Visibility.Collapsed;
+                ffmeElement.Visibility = Visibility.Collapsed;
                 animatedImage.Visibility = Visibility.Collapsed;
                 skiaImage.Visibility = Visibility.Visible;
                 StartSkiaAnimation(path);
             }
+            else if (path.ToLower().EndsWith(".webm"))
+            {
+                mediaElement.Visibility = Visibility.Collapsed;
+                skiaImage.Visibility = Visibility.Collapsed;
+                animatedImage.Visibility = Visibility.Collapsed;
+                ffmeElement.Visibility = Visibility.Visible;
+                _pendingFfmePlay = true;
+                _ffmeOpenCts = new CancellationTokenSource();
+                _ = OpenFfmeAsync(path, _ffmeOpenCts.Token);
+            }
             else
             {
                 mediaElement.Visibility = Visibility.Visible;
+                ffmeElement.Visibility = Visibility.Collapsed;
                 animatedImage.Visibility = Visibility.Collapsed;
                 skiaImage.Visibility = Visibility.Collapsed;
                 mediaElement.LoadedBehavior = MediaState.Manual;
@@ -65,6 +84,26 @@ namespace GridPlayer
             }
             mediaController.setMedia(this);
             mediaController.mediaStop += _mediaStop;
+        }
+
+        private async Task OpenFfmeAsync(string path, CancellationToken token)
+        {
+            try
+            {
+                await ffmeElement.Open(new Uri(path));
+                if (token.IsCancellationRequested || _currentPath != path) return;
+
+                _ffmeReady = true;
+                if (_pendingFfmePlay)
+                {
+                    await ffmeElement.Play();
+                }
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"FFME Open Exception: {ex.Message}");
+            }
         }
 
         private async void StartSkiaAnimation(string path)
@@ -106,7 +145,7 @@ namespace GridPlayer
                         for (int i = 0; i < frameCount; i++)
                         {
                             if (token.IsCancellationRequested) break;
-                            
+
                             while (!isPlaying && !token.IsCancellationRequested)
                             {
                                 await Task.Delay(100);
@@ -145,6 +184,14 @@ namespace GridPlayer
             {
                 // Animation loop handles isPlaying
             }
+            else if (ffmeElement.Visibility == Visibility.Visible)
+            {
+                _pendingFfmePlay = true;
+                if (_ffmeReady)
+                {
+                    _ = PlayFfmeAsync();
+                }
+            }
             else if (animatedImage.Visibility == Visibility.Visible)
             {
                 var controller = ImageBehavior.GetAnimationController(animatedImage);
@@ -162,6 +209,11 @@ namespace GridPlayer
             {
                 // Animation loop handles isPlaying
             }
+            else if (ffmeElement.Visibility == Visibility.Visible)
+            {
+                _pendingFfmePlay = false;
+                _ = PauseFfmeAsync();
+            }
             else if (animatedImage.Visibility == Visibility.Visible)
             {
                 var controller = ImageBehavior.GetAnimationController(animatedImage);
@@ -173,9 +225,86 @@ namespace GridPlayer
             }
         }
         public bool IsPlaying { get { return isPlaying; } }
+        public bool HasEnded
+        {
+            get
+            {
+                if (ffmeElement.Visibility == Visibility.Visible) return ffmeElement.HasMediaEnded;
+                return mediaElement.NaturalDuration.HasTimeSpan
+                    && mediaElement.Position >= mediaElement.NaturalDuration.TimeSpan;
+            }
+        }
+
+        public void Restart()
+        {
+            isPlaying = true;
+            if (ffmeElement.Visibility == Visibility.Visible)
+            {
+                _pendingFfmePlay = true;
+                _ = RestartFfmeAsync();
+            }
+            else
+            {
+                Position = 0;
+                Play();
+            }
+        }
+
+        private async Task RestartFfmeAsync()
+        {
+            if (_isRestartingFfme) return;
+
+            try
+            {
+                if (!_ffmeReady) return;
+
+                _isRestartingFfme = true;
+                await ffmeElement.Stop();
+                await ffmeElement.Seek(TimeSpan.Zero);
+                await ffmeElement.Play();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"FFME Restart Exception: {ex.Message}");
+            }
+            finally
+            {
+                _isRestartingFfme = false;
+            }
+        }
+
+        private async Task PlayFfmeAsync()
+        {
+            try
+            {
+                await ffmeElement.Play();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"FFME Play Exception: {ex.Message}");
+            }
+        }
+
+        private async Task PauseFfmeAsync()
+        {
+            try
+            {
+                if (_ffmeReady) await ffmeElement.Pause();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"FFME Pause Exception: {ex.Message}");
+            }
+        }
+
         private void _mediaStop(object? sender, EventArgs e)
         {
             _animationCts?.Cancel();
+            _ffmeOpenCts?.Cancel();
+            _pendingFfmePlay = false;
+            _ffmeReady = false;
+            _isRestartingFfme = false;
+            if (ffmeElement.Visibility == Visibility.Visible) _ = ffmeElement.Close();
             mediaStop.Invoke(this, EventArgs.Empty);
             isPlaying = false;
         }
@@ -187,6 +316,10 @@ namespace GridPlayer
                 {
                     return _currentPath;
                 }
+                if (ffmeElement.Visibility == Visibility.Visible)
+                {
+                    return ffmeElement.Source?.LocalPath ?? "";
+                }
                 if (animatedImage.Visibility == Visibility.Visible)
                 {
                     var source = ImageBehavior.GetAnimatedSource(animatedImage) as BitmapImage;
@@ -197,8 +330,16 @@ namespace GridPlayer
         }
         public double Position
         {
-            get { return mediaElement.Position.TotalSeconds; }
-            set { mediaElement.Position = TimeSpan.FromSeconds(value); }
+            get
+            {
+                if (ffmeElement.Visibility == Visibility.Visible) return ffmeElement.Position.TotalSeconds;
+                return mediaElement.Position.TotalSeconds;
+            }
+            set
+            {
+                if (ffmeElement.Visibility == Visibility.Visible) ffmeElement.Position = TimeSpan.FromSeconds(value);
+                else mediaElement.Position = TimeSpan.FromSeconds(value);
+            }
 
         }
 
@@ -226,11 +367,16 @@ namespace GridPlayer
         {
             mediaOpen.Invoke(this, EventArgs.Empty);
         }
+        private void ffmeElement_MediaOpened(object? sender, Unosquare.FFME.Common.MediaOpenedEventArgs e)
+        {
+            mediaOpen.Invoke(this, EventArgs.Empty);
+        }
         public double NaturalWidth
         {
             get
             {
                 if (skiaImage.Visibility == Visibility.Visible && _skiaBitmap != null) return _skiaBitmap.Width;
+                if (ffmeElement.Visibility == Visibility.Visible) return ffmeElement.NaturalVideoWidth;
                 if (animatedImage.Visibility == Visibility.Visible) return animatedImage.Source?.Width ?? 0;
                 return mediaElement.NaturalVideoWidth;
             }
@@ -240,6 +386,7 @@ namespace GridPlayer
             get
             {
                 if (skiaImage.Visibility == Visibility.Visible && _skiaBitmap != null) return _skiaBitmap.Height;
+                if (ffmeElement.Visibility == Visibility.Visible) return ffmeElement.NaturalVideoHeight;
                 if (animatedImage.Visibility == Visibility.Visible) return animatedImage.Source?.Height ?? 0;
                 return mediaElement.NaturalVideoHeight;
             }

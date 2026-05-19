@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Media.Media3D;
+using Unosquare.FFME;
 
 namespace GridPlayer
 {
@@ -19,8 +16,39 @@ namespace GridPlayer
     public partial class App : Application
     {
         public Settings settings = new();
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetDllDirectory(string lpPathName);
+
         public App()
         {
+            var ffmpegPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg");
+            Library.FFmpegDirectory = ffmpegPath;
+            SetDllDirectory(ffmpegPath);
+            Environment.SetEnvironmentVariable(
+                "PATH",
+                ffmpegPath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH"));
+
+            // Check if DLLs exist
+            if (Directory.Exists(ffmpegPath))
+            {
+                var files = Directory.GetFiles(ffmpegPath, "*.dll");
+                Debug.WriteLine($"FFmpeg DLLs found in {ffmpegPath}: {files.Length} files.");
+                try
+                {
+                    Library.LoadFFmpeg();
+                    Debug.WriteLine($"FFmpeg loaded: {Library.FFmpegVersionInfo}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"FFmpeg load failed: {ex}");
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"FFmpeg directory NOT FOUND: {ffmpegPath}");
+            }
+
             settings.load();
         }
 

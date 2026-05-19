@@ -68,6 +68,14 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
+  <Target Name="CopyFFmpegToDebugAppX" AfterTargets="Build" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ItemGroup>
+      <PackagedFFmpegFiles Include="$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\PackageLayout\grid-video-player\ffmpeg\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PackagedFFmpegFiles)"
+          DestinationFolder="$(MSBuildProjectDirectory)\bin\$(Platform)\$(Configuration)\AppX\grid-video-player\ffmpeg\"
+          SkipUnchangedFiles="true" />
+  </Target>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" PrivateAssets="all" />
   </ItemGroup>

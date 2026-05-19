@@ -8,7 +8,7 @@ namespace GridPlayer
     public static class MediaFileHelper
     {
         private static readonly string[] SupportedExtensions = {
-            ".mp4", ".m4v", ".mov", ".avi", ".wmv", ".mkv", ".flv", ".mpg", ".mpeg", ".ts",
+            ".mp4", ".m4v", ".mov", ".avi", ".wmv", ".mkv", ".flv", ".mpg", ".mpeg", ".ts", ".webm",
             ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"
         };
 

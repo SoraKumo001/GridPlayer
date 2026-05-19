@@ -57,9 +57,25 @@
 		<Resource Include="Images\stop-circle-outline.png" />
 	</ItemGroup>
 
+	<Target Name="CopyFFmpeg" AfterTargets="AfterBuild">
+		<ItemGroup>
+			<FFmpegFiles Include="$(PkgFFmpeg_Native)\runtimes\win7-x64\native\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(FFmpegFiles)" DestinationFolder="$(TargetDir)ffmpeg\" SkipUnchangedFiles="true" />
+	</Target>
+
+	<ItemGroup>
+		<Content Include="$(PkgFFmpeg_Native)\runtimes\win7-x64\native\*.*"
+				 Link="ffmpeg\%(Filename)%(Extension)"
+				 CopyToOutputDirectory="PreserveNewest"
+				 CopyToPublishDirectory="PreserveNewest" />
+	</ItemGroup>
+
 	<ItemGroup>
 	  <PackageReference Include="AnimatedImage.Native" Version="2.1.2" />
 	  <PackageReference Include="AnimatedImage.Wpf" Version="2.1.4" />
+	  <PackageReference Include="FFME.Windows" Version="4.4.350" />
+	  <PackageReference Include="FFmpeg.Native" Version="4.4.0.2386" GeneratePathProperty="true" />
 	  <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1" />
 	  <PackageReference Include="SkiaSharp" Version="3.119.2" />
 	  <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.2" />

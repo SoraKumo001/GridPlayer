@@ -2,14 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
-using System.Net.NetworkInformation;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
 
 
 namespace GridPlayer
@@ -123,7 +118,7 @@ namespace GridPlayer
 
                     var r = w / h / this.ratio;
                     var v = r < 1.0 ? r : 1.0 / r; // Match quality (0 to 1)
-                    
+
                     // Prefer grids that have less empty cells
                     v *= (double)count / (x * y);
 
@@ -168,7 +163,7 @@ namespace GridPlayer
                     int extra = xCount % itemsInThisRow;
 
                     colSpan = baseSpan + (colInRow < extra ? 1 : 0);
-                    
+
                     // Calculate actual column offset
                     int offset = 0;
                     for (int j = 0; j < colInRow; j++)

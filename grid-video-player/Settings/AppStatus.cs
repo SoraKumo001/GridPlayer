@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Media.Media3D;
 
 namespace GridPlayer
 {
