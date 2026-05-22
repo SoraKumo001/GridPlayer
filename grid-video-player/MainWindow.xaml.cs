@@ -101,82 +101,25 @@ namespace GridPlayer
             var count = grid.Children.Count;
             if (count == 0) return;
 
-            var xCount = 0;
-            var yCount = 0;
-            var max = 0.0;
-
-            // 1. Calculate the best grid size (NxM)
-            for (var y = 1; y <= count; y++)
-            {
-                for (var x = 1; x <= count; x++)
-                {
-                    if (x * y < count) continue;
-
-                    var w = grid.ActualWidth / x;
-                    var h = grid.ActualHeight / y;
-                    if (w <= 0 || h <= 0) continue;
-
-                    var r = w / h / this.ratio;
-                    var v = r < 1.0 ? r : 1.0 / r; // Match quality (0 to 1)
-
-                    // Prefer grids that have less empty cells
-                    v *= (double)count / (x * y);
-
-                    if (v > max)
-                    {
-                        max = v;
-                        yCount = y;
-                        xCount = x;
-                    }
-                }
-            }
-
-            // Fallback
-            if (xCount == 0 || yCount == 0)
-            {
-                xCount = (int)Math.Ceiling(Math.Sqrt(count));
-                yCount = (int)Math.Ceiling((double)count / xCount);
-            }
+            var dimensions = GridLayoutCalculator.CalculateOptimalGrid(count, grid.ActualWidth, grid.ActualHeight, ratio);
 
             // 2. Clear and recreate definitions
             grid.ColumnDefinitions.Clear();
-            for (var i = 0; i < xCount; i++) grid.ColumnDefinitions.Add(new ColumnDefinition());
+            for (var i = 0; i < dimensions.Columns; i++) grid.ColumnDefinitions.Add(new ColumnDefinition());
             grid.RowDefinitions.Clear();
-            for (var i = 0; i < yCount; i++) grid.RowDefinitions.Add(new RowDefinition());
+            for (var i = 0; i < dimensions.Rows; i++) grid.RowDefinitions.Add(new RowDefinition());
 
             // 3. Place items with Span logic to fill gaps
+            var placements = GridLayoutCalculator.CalculatePlacements(count, dimensions);
             for (var i = 0; i < count; i++)
             {
                 var control = grid.Children[i];
-                int row = i / xCount;
-                int colInRow = i % xCount;
+                var placement = placements[i];
 
-                int itemsInThisRow = Math.Min(xCount, count - row * xCount);
-                int col = colInRow;
-                int colSpan = 1;
-                int rowSpan = 1;
-
-                // If this is the last row and it's not full, expand items to fill the width
-                if (row == yCount - 1 && itemsInThisRow < xCount)
-                {
-                    int baseSpan = xCount / itemsInThisRow;
-                    int extra = xCount % itemsInThisRow;
-
-                    colSpan = baseSpan + (colInRow < extra ? 1 : 0);
-
-                    // Calculate actual column offset
-                    int offset = 0;
-                    for (int j = 0; j < colInRow; j++)
-                    {
-                        offset += baseSpan + (j < extra ? 1 : 0);
-                    }
-                    col = offset;
-                }
-
-                Grid.SetRow(control, row);
-                Grid.SetColumn(control, col);
-                Grid.SetRowSpan(control, rowSpan);
-                Grid.SetColumnSpan(control, colSpan);
+                Grid.SetRow(control, placement.Row);
+                Grid.SetColumn(control, placement.Column);
+                Grid.SetRowSpan(control, placement.RowSpan);
+                Grid.SetColumnSpan(control, placement.ColumnSpan);
             }
         }
 
@@ -311,15 +254,15 @@ namespace GridPlayer
                 case Key.Right:
                     foreach (MediaPlayer p in grid.Children)
                     {
-                        if (p.media.Visibility == Visibility.Visible)
-                            p.media.Position = p.media.Position.Add(TimeSpan.FromSeconds(10));
+                        if (p.HasDuration)
+                            p.Position += 10;
                     }
                     break;
                 case Key.Left:
                     foreach (MediaPlayer p in grid.Children)
                     {
-                        if (p.media.Visibility == Visibility.Visible)
-                            p.media.Position = p.media.Position.Subtract(TimeSpan.FromSeconds(10));
+                        if (p.HasDuration)
+                            p.Position -= 10;
                     }
                     break;
                 case Key.Up:

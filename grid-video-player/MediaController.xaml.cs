@@ -20,72 +20,42 @@ namespace GridPlayer
         }
         public void setMedia(MediaPlayer player)
         {
-            this.player = player;
-            var mediaElement = player.media;
-            if (mediaElement != null)
+            if (this.player != null)
             {
-                DispatcherTimer timer = new();
-                timer.Interval = TimeSpan.FromSeconds(0.1);
-                timer.Tick += timer_Tick;
-                timer.Start();
-                mediaElement.MediaEnded += mediaEnded;
-                mediaElement.MediaFailed += mediaFailed;
-
-                player.ffmeElement.MediaEnded += ffme_MediaEnded;
-                player.ffmeElement.MediaFailed += ffme_MediaFailed;
-
-                play();
-
+                this.player.MediaEnded -= mediaEnded;
+                this.player.MediaFailed -= mediaFailed;
             }
+
+            this.player = player;
+            this.player.MediaEnded += mediaEnded;
+            this.player.MediaFailed += mediaFailed;
+
+            DispatcherTimer timer = new();
+            timer.Interval = TimeSpan.FromSeconds(0.1);
+            timer.Tick += timer_Tick;
+            timer.Start();
+
+            play();
         }
         private void timer_Tick(object? sender, EventArgs e)
         {
             if (player == null) return;
 
-            bool hasDuration = false;
-            double nowSec = 0;
-            double totalSec = 0;
-            TimeSpan position = TimeSpan.Zero;
-            TimeSpan duration = TimeSpan.Zero;
-
-            if (player.ffmeElement.Visibility == Visibility.Visible)
+            if (player.HasDuration && player.Duration > 0)
             {
-                if (player.ffmeElement.NaturalDuration.HasValue)
-                {
-                    hasDuration = true;
-                    nowSec = player.ffmeElement.Position.TotalSeconds;
-                    totalSec = player.ffmeElement.NaturalDuration.Value.TotalSeconds;
-                    position = player.ffmeElement.Position;
-                    duration = player.ffmeElement.NaturalDuration.Value;
-                }
-
-                if (player.IsPlaying && player.HasEnded)
-                {
-                    onMediaEnded();
-                    return;
-                }
-            }
-            else
-            {
-                var mediaElement = player.media;
-                if (mediaElement != null && mediaElement.NaturalDuration.HasTimeSpan)
-                {
-                    hasDuration = true;
-                    nowSec = mediaElement.Position.TotalSeconds;
-                    totalSec = mediaElement.NaturalDuration.TimeSpan.TotalSeconds;
-                    position = mediaElement.Position;
-                    duration = mediaElement.NaturalDuration.TimeSpan;
-                }
-            }
-
-            if (hasDuration && totalSec > 0)
-            {
+                var nowSec = player.Position;
+                var totalSec = player.Duration;
                 var progress = nowSec / totalSec;
                 if (!double.IsNaN(progress) && !double.IsInfinity(progress))
                 {
                     seekSlider.Value = progress;
                 }
-                timeText.Text = string.Format("{0:mm\\:ss} / {1:mm\\:ss}", position, duration);
+                timeText.Text = string.Format("{0:mm\\:ss} / {1:mm\\:ss}", TimeSpan.FromSeconds(nowSec), TimeSpan.FromSeconds(totalSec));
+            }
+
+            if (player.IsPlaying && player.HasEnded)
+            {
+                onMediaEnded();
             }
         }
 
@@ -127,11 +97,7 @@ namespace GridPlayer
             e.Handled = true;
         }
 
-        private void mediaEnded(object sender, RoutedEventArgs e)
-        {
-            onMediaEnded();
-        }
-        private void ffme_MediaEnded(object? sender, EventArgs e)
+        private void mediaEnded(object? sender, EventArgs e)
         {
             onMediaEnded();
         }
@@ -144,44 +110,18 @@ namespace GridPlayer
                 pauseButton.Visibility = Visibility.Visible;
             }
         }
-        private void mediaFailed(object? sender, RoutedEventArgs e)
+        private void mediaFailed(object? sender, Exception e)
         {
-            Debug.WriteLine("Failed");
+            Debug.WriteLine($"Media failed: {e.Message}");
         }
-        private void ffme_MediaFailed(object? sender, Unosquare.FFME.Common.MediaFailedEventArgs e)
-        {
-            Debug.WriteLine($"FFME Failed: {e.ErrorException}");
-        }
-
 
         private void seekSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (seekSlider.IsMouseOver && Mouse.LeftButton == MouseButtonState.Pressed && player != null)
             {
-                double totalSec = 0;
-                bool hasDuration = false;
-
-                if (player.ffmeElement.Visibility == Visibility.Visible)
+                if (player.HasDuration)
                 {
-                    if (player.ffmeElement.NaturalDuration.HasValue)
-                    {
-                        hasDuration = true;
-                        totalSec = player.ffmeElement.NaturalDuration.Value.TotalSeconds;
-                    }
-                }
-                else
-                {
-                    var mediaElement = player.media;
-                    if (mediaElement != null && mediaElement.NaturalDuration.HasTimeSpan)
-                    {
-                        hasDuration = true;
-                        totalSec = mediaElement.NaturalDuration.TimeSpan.TotalSeconds;
-                    }
-                }
-
-                if (hasDuration)
-                {
-                    player.Position = e.NewValue * totalSec;
+                    player.Position = e.NewValue * player.Duration;
                 }
             }
         }

@@ -1,8 +1,6 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -25,63 +23,17 @@ namespace GridPlayer
     {
         public delegate void LocalEventHandler(object? sender);
         public event LocalEventHandler update = (sender) => { };
-        Settings settings = ((App)Application.Current).settings;
         private Point _startPoint;
         DispatcherTimer? timer;
         public MediaListWindow()
         {
             InitializeComponent();
+            DataContext = new MediaListViewModel();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            mediaNameList.ItemsSource = settings.mediaList;
-            mediaNameList.SelectedIndex = 0;
-        }
-
-        private void mediaNameList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            mediaPathList.ItemsSource = null;
-            if (mediaNameList.SelectedIndex >= 0)
-            {
-                mediaPathList.ItemsSource = settings.mediaList[mediaNameList.SelectedIndex].mediaData;
-
-            }
-        }
-
-        private void pathCopy_Click(object sender, RoutedEventArgs e)
-        {
-            settings.mediaList.Add(new MediaDataList()
-            {
-                name = "medias",
-                mediaData = new ObservableCollection<MediaData>(settings.mediaList[0].mediaData)
-            });
-            mediaNameList.SelectedIndex = settings.mediaList.Count - 1;
-
-
-        }
-
-        private void pathDelete_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedItems = mediaPathList.SelectedItems.Cast<MediaData>().ToList();
-            if (selectedItems.Count > 0 && mediaNameList.SelectedIndex >= 0)
-            {
-                var targetList = settings.mediaList[mediaNameList.SelectedIndex].mediaData;
-                foreach (var item in selectedItems)
-                {
-                    targetList.Remove(item);
-                }
-            }
-        }
-        private void nameDelete_Click(object sender, RoutedEventArgs e)
-        {
-
-            var item = (MediaDataList)mediaNameList.SelectedItem;
-            if (item != null && settings.mediaList[0] != item)
-            {
-                settings.mediaList.Remove(item);
-            }
-
+            // DataContext is already set in Constructor.
         }
 
         private void mediaNameList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -89,30 +41,26 @@ namespace GridPlayer
             ListViewItem item = (ListViewItem)sender;
             if (item.DataContext is MediaDataList list)
             {
-                settings.mediaList[0].mediaData.Clear();
-                foreach (var d in list.mediaData)
-                    settings.mediaList[0].mediaData.Add(d);
-
-                mediaNameList.SelectedIndex = 0;
+                var vm = (MediaListViewModel)DataContext;
+                vm.ApplyPlaylistCommand.Execute(list);
             }
         }
 
         private void mediaNameList_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            // Type check is not strictly needed here as we use SelectedIndex, 
-            // but let's ensure we only care about the left list if needed.
-            // However, this handler is currently empty in its logic.
+            // Empty
         }
 
         private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
         {
             timer?.Stop();
+            var vm = (MediaListViewModel)DataContext;
             var index = mediaNameList.SelectedIndex;
             if (index >= 0 && e.ClickCount == 1)
             {
                 TextBox txt = (TextBox)((Grid)((TextBlock)sender).Parent).Children[1];
                 int i;
-                for (i = 0; i < settings.mediaList.Count && settings.mediaList[i] != txt.DataContext; i++) ;
+                for (i = 0; i < vm.Playlists.Count && vm.Playlists[i] != txt.DataContext; i++) ;
                 if (i == index)
                 {
                     timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(0.2) };
@@ -145,9 +93,6 @@ namespace GridPlayer
         {
             var listView = (ListView)sender;
             var gridView = (GridView)listView.View;
-            //gridView.Columns[0].Width = Math.Max(listView.ActualWidth - 20, 0);
-
-
             Debug.WriteLine(listView.ItemsPanel.Resources.Values);
         }
 
@@ -158,22 +103,6 @@ namespace GridPlayer
                 TextBlock tb = (TextBlock)((Grid)((TextBox)sender).Parent).Children[0];
                 tb.Visibility = Visibility.Visible;
                 ((TextBox)sender).Visibility = Visibility.Collapsed;
-            }
-        }
-        private void searchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (mediaNameList.SelectedIndex >= 0)
-            {
-                string query = searchBox.Text.ToLower();
-                var allData = settings.mediaList[mediaNameList.SelectedIndex].mediaData;
-                if (string.IsNullOrWhiteSpace(query))
-                {
-                    mediaPathList.ItemsSource = allData;
-                }
-                else
-                {
-                    mediaPathList.ItemsSource = allData.Where(d => d.path.ToLower().Contains(query)).ToList();
-                }
             }
         }
 
@@ -227,15 +156,19 @@ namespace GridPlayer
                 int targetIndex = GetCurrentIndex(e.GetPosition(mediaNameList), mediaNameList);
                 if (targetIndex >= 0)
                 {
-                    settings.mediaList.Remove(droppedData);
-                    if (targetIndex > settings.mediaList.Count) targetIndex = settings.mediaList.Count;
-                    settings.mediaList.Insert(targetIndex, droppedData);
+                    var vm = (MediaListViewModel)DataContext;
+                    vm.Playlists.Remove(droppedData);
+                    if (targetIndex > vm.Playlists.Count) targetIndex = vm.Playlists.Count;
+                    vm.Playlists.Insert(targetIndex, droppedData);
                 }
             }
         }
 
         private void mediaPathList_Drop(object sender, DragEventArgs e)
         {
+            var vm = (MediaListViewModel)DataContext;
+            if (vm.SelectedPlaylist == null) return;
+
             if (e.Data.GetDataPresent("MediaReorder"))
             {
                 var droppedData = e.Data.GetData("MediaReorder") as MediaData;
@@ -243,28 +176,24 @@ namespace GridPlayer
 
                 if (!string.IsNullOrWhiteSpace(searchBox.Text)) return; // Disable reorder during search
 
-                if (mediaNameList.SelectedIndex >= 0)
+                var targetList = vm.SelectedPlaylist.mediaData;
+                int targetIndex = GetCurrentIndex(e.GetPosition(mediaPathList), mediaPathList);
+                if (targetIndex >= 0)
                 {
-                    var targetList = settings.mediaList[mediaNameList.SelectedIndex].mediaData;
-                    int targetIndex = GetCurrentIndex(e.GetPosition(mediaPathList), mediaPathList);
-                    if (targetIndex >= 0)
-                    {
-                        targetList.Remove(droppedData);
-                        if (targetIndex > targetList.Count) targetIndex = targetList.Count;
-                        targetList.Insert(targetIndex, droppedData);
-                    }
+                    targetList.Remove(droppedData);
+                    if (targetIndex > targetList.Count) targetIndex = targetList.Count;
+                    targetList.Insert(targetIndex, droppedData);
                 }
             }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (files != null && mediaNameList.SelectedIndex >= 0)
+                if (files != null)
                 {
-                    var targetList = settings.mediaList[mediaNameList.SelectedIndex].mediaData;
+                    var targetList = vm.SelectedPlaylist.mediaData;
                     var mediaFiles = MediaFileHelper.GetAllMediaFiles(files);
                     foreach (string file in mediaFiles)
                     {
-                        // Add new media to the list
                         targetList.Add(new MediaData(file, 0));
                     }
                 }

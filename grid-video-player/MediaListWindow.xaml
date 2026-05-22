@@ -82,15 +82,15 @@
             
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                 <TextBlock Text="PLAYLISTS" VerticalAlignment="Center" FontWeight="Bold" FontSize="12" Foreground="#888888" Margin="5,0,10,0"/>
-                <Button Style="{StaticResource ToolbarButton}" x:Name="pathCopy" Click="pathCopy_Click" ToolTip="New Playlist from Current">
+                <Button Style="{StaticResource ToolbarButton}" x:Name="pathCopy" Command="{Binding CopyPlaylistCommand}" ToolTip="New Playlist from Current">
                     <Image Source="/Images/outline_file_copy_white_48dp.png" Opacity="0.8"/>
                 </Button>
-                <Button Style="{StaticResource ToolbarButton}" x:Name="nameDelete" Click="nameDelete_Click" ToolTip="Delete Selected Playlist">
+                <Button Style="{StaticResource ToolbarButton}" x:Name="nameDelete" Command="{Binding DeletePlaylistCommand}" CommandParameter="{Binding SelectedItem, ElementName=mediaNameList}" ToolTip="Delete Selected Playlist">
                     <Image Source="/Images/delete-outline.png" Opacity="0.8"/>
                 </Button>
             </StackPanel>
 
-            <ListView x:Name="mediaNameList" Grid.Row="1" SelectionChanged="mediaNameList_SelectionChanged" SizeChanged="ListView_SizeChanged" AllowDrop="True" Drop="mediaNameList_Drop" DragOver="ListView_DragOver">
+            <ListView x:Name="mediaNameList" Grid.Row="1" ItemsSource="{Binding Playlists}" SelectedItem="{Binding SelectedPlaylist, Mode=TwoWay}" SizeChanged="ListView_SizeChanged" AllowDrop="True" Drop="mediaNameList_Drop" DragOver="ListView_DragOver">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
                         <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListViewItem_PreviewMouseLeftButtonDown"/>
@@ -131,15 +131,15 @@
                 
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="MEDIA FILES" VerticalAlignment="Center" FontWeight="Bold" FontSize="12" Foreground="#888888" Margin="5,0,10,0"/>
-                    <Button Style="{StaticResource ToolbarButton}" x:Name="pathDelete" Click="pathDelete_Click" ToolTip="Remove Selected Files">
+                    <Button Style="{StaticResource ToolbarButton}" x:Name="pathDelete" Command="{Binding DeleteMediaDataCommand}" CommandParameter="{Binding SelectedItems, ElementName=mediaPathList}" ToolTip="Remove Selected Files">
                         <Image Source="/Images/delete-outline.png" Opacity="0.8"/>
                     </Button>
                 </StackPanel>
 
-                <TextBox x:Name="searchBox" Grid.Column="1" Width="200" Padding="8,4" Background="#252525" Foreground="White" BorderThickness="1" BorderBrush="#333333" TextChanged="searchBox_TextChanged" Tag="Search files..."/>
+                <TextBox x:Name="searchBox" Grid.Column="1" Width="200" Padding="8,4" Background="#252525" Foreground="White" BorderThickness="1" BorderBrush="#333333" Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" Tag="Search files..."/>
             </Grid>
 
-            <ListView x:Name="mediaPathList" Grid.Row="1" AlternationCount="2" SizeChanged="ListView_SizeChanged" SelectionMode="Extended" AllowDrop="True" Drop="mediaPathList_Drop" DragOver="ListView_DragOver">
+            <ListView x:Name="mediaPathList" Grid.Row="1" ItemsSource="{Binding FilteredMediaData}" AlternationCount="2" SizeChanged="ListView_SizeChanged" SelectionMode="Extended" AllowDrop="True" Drop="mediaPathList_Drop" DragOver="ListView_DragOver">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
                         <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListViewItem_PreviewMouseLeftButtonDown"/>
