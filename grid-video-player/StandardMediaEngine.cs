@@ -60,6 +60,14 @@ namespace GridPlayer
             _isPlaying = false;
         }
 
+        public void Restart()
+        {
+            _mediaElement.Stop();
+            _mediaElement.Position = TimeSpan.Zero;
+            _mediaElement.Play();
+            _isPlaying = true;
+        }
+
         public double Position
         {
             get => _mediaElement.Position.TotalSeconds;

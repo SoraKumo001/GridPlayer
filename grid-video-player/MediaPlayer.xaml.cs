@@ -88,12 +88,7 @@ namespace GridPlayer
 
         public void Restart()
         {
-            if (_mediaEngine != null)
-            {
-                _mediaEngine.Stop();
-                _mediaEngine.Position = 0;
-                _mediaEngine.Play();
-            }
+            _mediaEngine?.Restart();
         }
 
         private void _mediaStop(object? sender, EventArgs e)

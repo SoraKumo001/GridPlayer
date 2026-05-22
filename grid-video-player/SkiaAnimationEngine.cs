@@ -152,6 +152,11 @@ namespace GridPlayer
 
         public string Path => _path;
 
+        public void Restart()
+        {
+            Play();
+        }
+
         public void Dispose()
         {
             _animationCts.Cancel();

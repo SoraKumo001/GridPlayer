@@ -7,6 +7,7 @@ namespace GridPlayer
         void Play();
         void Pause();
         void Stop();
+        void Restart();
         double Position { get; set; }
         double Duration { get; }
         bool HasDuration { get; }

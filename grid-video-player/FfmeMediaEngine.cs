@@ -13,6 +13,7 @@ namespace GridPlayer
         private bool _isPlaying;
         private bool _isReady;
         private bool _pendingPlay;
+        private bool _isRestarting;
 
         public event EventHandler? MediaOpened;
         public event EventHandler? MediaEnded;
@@ -163,6 +164,35 @@ namespace GridPlayer
         public double NaturalHeight => _ffmeElement.NaturalVideoHeight;
 
         public string Path => _path;
+
+        public void Restart()
+        {
+            if (_isReady && !_isRestarting)
+            {
+                _ = RestartAsync();
+            }
+        }
+
+        private async Task RestartAsync()
+        {
+            _isRestarting = true;
+            try
+            {
+                _isPlaying = false;
+                await _ffmeElement.Stop();
+                await _ffmeElement.Seek(TimeSpan.Zero);
+                await _ffmeElement.Play();
+                _isPlaying = true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"FFME Restart Exception: {ex.Message}");
+            }
+            finally
+            {
+                _isRestarting = false;
+            }
+        }
 
         public void Dispose()
         {
